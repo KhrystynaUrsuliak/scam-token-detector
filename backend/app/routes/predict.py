@@ -51,5 +51,7 @@ def predict(
 
     db.add(check)
     db.commit()
+    
+    result["token_id"] = token.id
 
     return result
