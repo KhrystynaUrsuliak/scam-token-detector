@@ -6,6 +6,6 @@ python-dotenv
 python-jose[cryptography]
 passlib[bcrypt]
 pandas
-scikit-learn
+scikit-learn==1.4.2
 joblib
 numpy
