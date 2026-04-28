@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import requests
 
 API_URL = "http://127.0.0.1:8000"
@@ -16,7 +17,7 @@ st.title("🛡️ Crypto Scam Token Detector")
 
 menu = st.sidebar.radio(
     "Navigation",
-    ["Login", "Register", "Check Token", "History", "Favorites"]
+    ["Login", "Register", "Dashboard", "Check Token", "History", "Favorites"]
 )
 
 def auth_headers():
@@ -70,6 +71,49 @@ elif menu == "Login":
         else:
             st.error(response.json().get("detail", "Login failed"))
 
+elif menu == "Dashboard":
+    st.header("Dashboard")
+
+    if not st.session_state.token:
+        st.warning("Please log in first.")
+    else:
+        response = requests.get(
+            f"{API_URL}/checks/",
+            headers=auth_headers()
+        )
+
+        if response.status_code == 200:
+            history = response.json()
+
+            if not history:
+                st.info("No checks yet.")
+            else:
+                df = pd.DataFrame(history)
+
+                total_checks = len(df)
+                scam_count = (df["prediction"] == "SCAM").sum()
+                legit_count = (df["prediction"] == "LEGIT").sum()
+                avg_risk = round(df["risk_score"].mean(), 2)
+
+                col1, col2, col3, col4 = st.columns(4)
+                col1.metric("Total Checks", total_checks)
+                col2.metric("Scam", scam_count)
+                col3.metric("Legit", legit_count)
+                col4.metric("Avg Risk Score", avg_risk)
+
+                st.subheader("Risk Score by Check")
+                st.line_chart(df["risk_score"])
+
+                st.subheader("Prediction Distribution")
+                st.bar_chart(df["prediction"].value_counts())
+
+                st.subheader("Recent Checks")
+                st.dataframe(
+                    df[["name", "url", "prediction", "risk_score", "probability", "created_at"]],
+                    use_container_width=True
+                )
+        else:
+            st.error(response.json().get("detail", "Failed to load dashboard"))
 
 elif menu == "Check Token":
     st.header("Check Token")
@@ -79,6 +123,9 @@ elif menu == "Check Token":
     else:
         token_name = st.text_input("Token Name", "Bitcoin")
         token_url = st.text_input("Token URL", "https://crypto.com/price/bitcoin")
+
+        if "last_prediction" not in st.session_state:
+            st.session_state.last_prediction = None
 
         if st.button("Analyze"):
             response = requests.post(
@@ -91,30 +138,32 @@ elif menu == "Check Token":
             )
 
             if response.status_code == 200:
-                result = response.json()
-
-                st.subheader("Result")
-
-                col1, col2, col3 = st.columns(3)
-                col1.metric("Prediction", result["prediction"])
-                col2.metric("Risk Score", result["risk_score"])
-                col3.metric("Probability", result["probability"])
-
-                st.info(result["explanation"])
-
-                if "token_id" in result:
-                    token_id = result["token_id"]
-                    if st.button("Add to Favorites"):
-                        fav_response = requests.post(
-                            f"{API_URL}/favorites/{token_id}",
-                            headers=auth_headers()
-                        )
-                        if fav_response.status_code == 200:
-                            st.success("Added to favorites!")
-                        else:
-                            st.error(fav_response.json().get("detail", "Failed to add favorite"))
+                st.session_state.last_prediction = response.json()
             else:
                 st.error(response.json().get("detail", "Prediction failed"))
+
+        if st.session_state.last_prediction:
+            result = st.session_state.last_prediction
+
+            st.subheader("Result")
+
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Prediction", result["prediction"])
+            col2.metric("Risk Score", result["risk_score"])
+            col3.metric("Probability", result["probability"])
+
+            st.info(result["explanation"])
+
+            if st.button("Add to Favorites"):
+                fav_response = requests.post(
+                    f"{API_URL}/favorites/{result['token_id']}",
+                    headers=auth_headers()
+                )
+
+                if fav_response.status_code == 200:
+                    st.success("Added to favorites!")
+                else:
+                    st.error(fav_response.json().get("detail", "Failed to add favorite"))
 
 
 elif menu == "History":
