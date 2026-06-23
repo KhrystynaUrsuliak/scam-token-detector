@@ -999,7 +999,7 @@ elif menu == "Dashboard":
         )
 
         if response.status_code == 200:
-            history = response.json()
+            history = response.json().get("items", [])
 
             if not history:
                 st.info(tr("no_checks"))
@@ -1423,7 +1423,7 @@ elif menu == "History":
         )
 
         if response.status_code == 200:
-            history = response.json()
+            history = response.json().get("items", [])
 
             if not history:
                 st.info(tr("no_checks"))
@@ -1536,7 +1536,7 @@ elif menu == "Favorites":
         )
 
         if response.status_code == 200:
-            favorites = response.json()
+            favorites = response.json().get("items", [])
 
             if not favorites:
                 st.info(tr("no_favorites"))
@@ -1617,8 +1617,8 @@ elif menu == "Admin":
             st.stop()
 
         stats = stats_response.json()
-        users = users_response.json()
-        checks = checks_response.json()
+        users = users_response.json().get("items", [])
+        checks = checks_response.json().get("items", [])
 
         st.markdown(
             f"""
