@@ -1236,14 +1236,15 @@ elif menu == "Check Token":
             st.session_state.prefill_token_name = token_name
             st.session_state.prefill_token_url = token_url
 
-            response = requests.post(
-                f"{API_URL}/predict/",
-                headers=auth_headers(),
-                json={
-                    "name": token_name,
-                    "url": token_url
-                }
-            )
+            with st.spinner("Analyzing token..."):
+                response = requests.post(
+                    f"{API_URL}/predict/",
+                    headers=auth_headers(),
+                    json={
+                        "name": token_name,
+                        "url": token_url
+                    }
+                )
 
             if response.status_code == 200:
                 st.session_state.last_prediction = response.json()
