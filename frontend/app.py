@@ -461,6 +461,9 @@ st.markdown("""
     .block-container {
         padding-top: 2rem;
         padding-bottom: 3rem;
+        max-width: 1100px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
     }
 
     [data-testid="stHeader"] {
@@ -587,7 +590,7 @@ st.markdown("""
     }
 
     .hero-title {
-        font-size: 68px;
+        font-size: clamp(36px, 5vw, 68px);
         line-height: 1.05;
         font-weight: 900;
         letter-spacing: -2px;
