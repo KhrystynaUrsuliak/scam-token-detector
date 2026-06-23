@@ -968,6 +968,68 @@ st.markdown("""
         font-size: 13px;
         color: #5a7a9e;
     }
+
+    .admin-dark-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .admin-dark-table th {
+        background: rgba(255,255,255,0.06);
+        color: #7c9bbf;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 18px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        text-align: left;
+    }
+
+    .admin-dark-table td {
+        padding: 12px 18px;
+        color: #dbeafe;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .admin-dark-table tr:last-child td { border-bottom: none; }
+
+    .admin-dark-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+    .tbl-id {
+        color: #5a7a9e !important;
+        font-size: 13px !important;
+        width: 70px;
+    }
+
+    .tbl-muted { color: #7c9bbf !important; }
+
+    .role-pill-admin {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: rgba(139,92,246,0.18);
+        border: 1px solid rgba(139,92,246,0.35);
+        color: #c4b5fd;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .role-pill-user {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: rgba(148,163,184,0.10);
+        border: 1px solid rgba(148,163,184,0.22);
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -2038,26 +2100,48 @@ elif menu == "Admin":
 
         st.markdown(
             f"""
-            <div class="chart-card">
-                <div class="chart-title">{tr("users")}</div>
-                <div class="chart-subtitle">
-                    {tr("registered_users")}
-                </div>
+            <div class="admin-section-card">
+                <div class="admin-section-title">{tr("users")}</div>
+                <div class="admin-section-subtitle">{tr("registered_users")}</div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
         if not users_df.empty:
-            st.markdown('<div class="admin-table-card">', unsafe_allow_html=True)
+            rows_html = ""
+            for _, row in users_df.iterrows():
+                role = str(row.get("role", "user"))
+                role_pill = (
+                    f'<span class="role-pill-admin">{role}</span>'
+                    if role == "admin"
+                    else f'<span class="role-pill-user">{role}</span>'
+                )
+                rows_html += f"""
+                <tr>
+                    <td class="tbl-id">#{int(row['id'])}</td>
+                    <td>{row['email']}</td>
+                    <td>{role_pill}</td>
+                </tr>
+                """
 
-            st.dataframe(
-                users_df,
-                use_container_width=True,
-                hide_index=True
+            st.markdown(
+                f"""
+                <div class="admin-table-card">
+                    <table class="admin-dark-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>{rows_html}</tbody>
+                    </table>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
-
-            st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info(tr("no_users_found"))
 
