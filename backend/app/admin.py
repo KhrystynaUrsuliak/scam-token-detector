@@ -8,6 +8,7 @@ from app.models.check import Check
 from app.models.report import Report
 from app.models.token import Token
 from app.utils.dependencies import get_current_user
+from app.ml.metrics import compute_model_metrics
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -172,3 +173,11 @@ def update_report_status(
     db.commit()
 
     return {"message": "Report status updated", "report_id": report.id, "status": report.status}
+
+
+@router.get("/model-metrics")
+def get_model_metrics(admin: User = Depends(require_admin)):
+    result, error = compute_model_metrics()
+    if error:
+        raise HTTPException(status_code=404, detail=error)
+    return result

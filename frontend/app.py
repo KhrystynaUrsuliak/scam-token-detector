@@ -131,6 +131,18 @@ TRANSLATIONS = {
         "check_number": "Check Number",
         "count": "Count",
         "share": "Share",
+        "model_performance": "Model Performance",
+        "model_performance_text": "Test set evaluation metrics for the scam detection model (20% holdout, random_state=42).",
+        "accuracy": "Accuracy",
+        "precision": "Precision",
+        "recall": "Recall",
+        "f1_score": "F1 Score",
+        "confusion_matrix": "Confusion Matrix",
+        "prob_distribution": "Scam Probability Distribution",
+        "prob_distribution_text": "How confident the model is across all test set predictions.",
+        "per_class_report": "Per-Class Report",
+        "support": "Support",
+        "dataset_missing": "Dataset file not found — place Crypto_enhanced_dataset.csv or Crypto_final_labeled.csv in backend/data/ to enable this section.",
     },
     "Українська": {
         "language": "Мова",
@@ -254,6 +266,18 @@ TRANSLATIONS = {
         "check_number": "Номер перевірки",
         "count": "Кількість",
         "share": "Частка",
+        "model_performance": "Якість моделі",
+        "model_performance_text": "Метрики на тестовій вибірці (20% holdout, random_state=42).",
+        "accuracy": "Точність",
+        "precision": "Precision",
+        "recall": "Recall",
+        "f1_score": "F1 Score",
+        "confusion_matrix": "Матриця помилок",
+        "prob_distribution": "Розподіл ймовірностей скаму",
+        "prob_distribution_text": "Впевненість моделі на всіх прикладах тестової вибірки.",
+        "per_class_report": "Звіт по класах",
+        "support": "Підтримка",
+        "dataset_missing": "Файл датасету не знайдено — помістіть Crypto_enhanced_dataset.csv або Crypto_final_labeled.csv у backend/data/ для активації цього розділу.",
     },
 }
 
@@ -1868,3 +1892,102 @@ elif menu == "Admin":
             st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info(tr("no_users_found"))
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        st.markdown(
+            f"""
+            <div class="admin-section-card">
+                <div class="admin-section-title">{tr("model_performance")}</div>
+                <div class="admin-section-subtitle">{tr("model_performance_text")}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        metrics_response = requests.get(f"{API_URL}/admin/model-metrics", headers=headers)
+
+        if metrics_response.status_code == 200:
+            m = metrics_response.json()
+
+            mc1, mc2, mc3, mc4 = st.columns(4)
+            mc1.metric(tr("accuracy"), f"{m['accuracy'] * 100:.2f}%")
+            mc2.metric(tr("precision"), f"{m['precision'] * 100:.2f}%")
+            mc3.metric(tr("recall"), f"{m['recall'] * 100:.2f}%")
+            mc4.metric(tr("f1_score"), f"{m['f1_score'] * 100:.2f}%")
+
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            chart_col1, chart_col2 = st.columns(2)
+
+            with chart_col1:
+                st.markdown(
+                    f"""
+                    <div class="chart-card">
+                        <div class="chart-title">{tr("confusion_matrix")}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                cm = m["confusion_matrix"]
+                cm_df = pd.DataFrame(
+                    cm,
+                    index=["True LEGIT", "True SCAM"],
+                    columns=["Pred LEGIT", "Pred SCAM"]
+                )
+                st.dataframe(cm_df, use_container_width=True)
+
+                st.markdown(
+                    f"""
+                    <div class="chart-card" style="margin-top:1rem">
+                        <div class="chart-title">{tr("per_class_report")}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                cr = m["class_report"]
+                cr_df = pd.DataFrame({
+                    "Class": ["LEGIT", "SCAM"],
+                    "Precision": [cr["legit"]["precision"], cr["scam"]["precision"]],
+                    "Recall": [cr["legit"]["recall"], cr["scam"]["recall"]],
+                    "F1": [cr["legit"]["f1"], cr["scam"]["f1"]],
+                    tr("support"): [cr["legit"]["support"], cr["scam"]["support"]],
+                })
+                st.dataframe(cr_df, use_container_width=True, hide_index=True)
+
+            with chart_col2:
+                if m.get("probability_distribution"):
+                    pd_data = m["probability_distribution"]
+                    st.markdown(
+                        f"""
+                        <div class="chart-card">
+                            <div class="chart-title">{tr("prob_distribution")}</div>
+                            <div class="chart-subtitle">{tr("prob_distribution_text")}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                    fig_prob = px.bar(
+                        x=pd_data["labels"],
+                        y=pd_data["values"],
+                        labels={"x": "P(scam)", "y": tr("count")},
+                        color=pd_data["values"],
+                        color_continuous_scale=["#22c55e", "#f59e0b", "#ef4444"],
+                    )
+                    fig_prob.update_layout(
+                        height=380,
+                        margin=dict(l=20, r=20, t=20, b=20),
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(255,255,255,0.02)",
+                        font=dict(color="#e5eef9"),
+                        coloraxis_showscale=False,
+                        xaxis=dict(showgrid=False, tickfont=dict(color="#b6c7dc")),
+                        yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,0.06)", tickfont=dict(color="#b6c7dc")),
+                    )
+                    fig_prob.update_traces(marker_line_width=0)
+                    st.plotly_chart(fig_prob, use_container_width=True)
+
+        elif metrics_response.status_code == 404:
+            st.info(tr("dataset_missing"))
+        else:
+            st.error(tr("failed_load_admin"))
