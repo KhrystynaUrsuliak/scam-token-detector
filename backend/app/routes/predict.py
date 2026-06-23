@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-
 from app.database import get_db
 from app.ml.predictor import predict_token
 from app.models.token import Token
 from app.models.check import Check
 from app.models.user import User
 from app.utils.dependencies import get_current_user
+from app.services.market_data_service import get_token_market_data
 
 router = APIRouter(prefix="/predict", tags=["Prediction"])
 
@@ -39,6 +39,14 @@ def predict(
         db.refresh(token)
 
     result = predict_token(request.name, request.url)
+
+    market_data = get_token_market_data(
+    name=request.name,
+    slug=slug,
+    include_chart=result["prediction"] == "LEGIT" or result["risk_score"] < 40
+    )
+    
+    result["market_data"] = market_data
 
     check = Check(
         user_id=current_user.id,

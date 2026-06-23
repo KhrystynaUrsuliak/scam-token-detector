@@ -1,0 +1,6 @@
+streamlit
+pandas
+requests
+PyJWT
+plotly
+streamlit-cookies-manager

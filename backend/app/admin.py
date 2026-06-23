@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 
-from database import get_db
-from models import User, TokenCheck
-from auth import get_current_user
+from app.database import get_db
+from app.models.user import User
+from app.models.check import Check
+from app.utils.dependencies import get_current_user
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -20,7 +20,7 @@ def get_all_users(
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin)
 ):
-    users = db.query(User).all()
+    users = db.query(User).order_by(User.id.desc()).all()
 
     return [
         {
@@ -37,16 +37,18 @@ def get_all_checks(
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin)
 ):
-    checks = db.query(TokenCheck).order_by(TokenCheck.id.desc()).all()
+    checks = db.query(Check).order_by(Check.id.desc()).all()
 
     return [
         {
             "id": check.id,
             "user_id": check.user_id,
-            "token_name": check.token_name,
-            "token_url": check.token_url,
+            "token_id": check.token_id,
+            "prediction_label": check.prediction_label,
             "risk_score": check.risk_score,
-            "is_scam": check.is_scam,
+            "probability": check.probability,
+            "explanation": check.explanation,
+            "created_at": check.created_at,
         }
         for check in checks
     ]
@@ -58,8 +60,19 @@ def get_admin_stats(
     admin: User = Depends(require_admin)
 ):
     total_users = db.query(User).count()
-    total_checks = db.query(TokenCheck).count()
-    scam_checks = db.query(TokenCheck).filter(TokenCheck.is_scam == True).count()
+    total_checks = db.query(Check).count()
+
+    scam_checks = (
+        db.query(Check)
+        .filter(Check.prediction_label.ilike("SCAM"))
+        .count()
+    )
+
+    safe_checks = (
+        db.query(Check)
+        .filter(Check.prediction_label.ilike("LEGIT"))
+        .count()
+    )
 
     scam_rate = 0
     if total_checks > 0:
@@ -69,5 +82,6 @@ def get_admin_stats(
         "total_users": total_users,
         "total_checks": total_checks,
         "scam_checks": scam_checks,
+        "safe_checks": safe_checks,
         "scam_rate": scam_rate,
     }
