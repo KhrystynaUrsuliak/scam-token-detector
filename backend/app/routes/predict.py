@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.ml.predictor import predict_token
@@ -15,6 +15,13 @@ router = APIRouter(prefix="/predict", tags=["Prediction"])
 class PredictionRequest(BaseModel):
     name: str
     url: str
+
+    @field_validator("url")
+    @classmethod
+    def validate_url(cls, v: str) -> str:
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("url must start with http:// or https://")
+        return v
 
 
 @router.post("/")
@@ -41,9 +48,9 @@ def predict(
     result = predict_token(request.name, request.url)
 
     market_data = get_token_market_data(
-    name=request.name,
-    slug=slug,
-    include_chart=result["prediction"] == "LEGIT" or result["risk_score"] < 40
+        name=request.name,
+        slug=slug,
+        include_chart=result["prediction"] == "LEGIT" or result["risk_score"] < 40
     )
     
     result["market_data"] = market_data

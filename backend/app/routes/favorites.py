@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -48,27 +48,36 @@ def add_favorite(
 @router.get("/")
 def get_favorites(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
 ):
-    results = (
+    offset = (page - 1) * limit
+    query = (
         db.query(Favorite, Token)
         .join(Token, Favorite.token_id == Token.id)
         .filter(Favorite.user_id == current_user.id)
         .order_by(Favorite.created_at.desc())
-        .all()
     )
+    total = query.count()
+    results = query.offset(offset).limit(limit).all()
 
-    return [
-        {
-            "favorite_id": favorite.id,
-            "token_id": token.id,
-            "name": token.name,
-            "url": token.url,
-            "slug": token.slug,
-            "created_at": favorite.created_at
-        }
-        for favorite, token in results
-    ]
+    return {
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "items": [
+            {
+                "favorite_id": favorite.id,
+                "token_id": token.id,
+                "name": token.name,
+                "url": token.url,
+                "slug": token.slug,
+                "created_at": favorite.created_at
+            }
+            for favorite, token in results
+        ]
+    }
 
 
 @router.delete("/{token_id}")
