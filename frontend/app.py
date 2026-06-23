@@ -806,9 +806,9 @@ st.markdown("""
         background: linear-gradient(180deg, rgba(10, 24, 46, 0.95), rgba(5, 15, 30, 0.92));
         border: 1px solid rgba(80, 140, 255, 0.18);
         border-radius: 22px;
-        padding: 18px;
-        box-shadow: 0 10px 28px rgba(0,0,0,0.22);
-        margin-top: 12px;
+        padding: 0;
+        overflow: hidden;
+        box-shadow: 0 10px 28px rgba(0,0,0,0.28);
     }
 
     .perf-metric-grid {
@@ -921,6 +921,52 @@ st.markdown("""
         margin-top: 10px;
         text-align: right;
         font-style: italic;
+    }
+
+    .filter-controls-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px;
+        padding: 14px 18px 6px;
+        margin-bottom: 14px;
+    }
+
+    .stSlider label {
+        color: #dbeafe !important;
+        font-weight: 600;
+    }
+
+    [data-testid="stSlider"] > div > div {
+        background: rgba(255,255,255,0.12) !important;
+    }
+
+    [data-testid="stSlider"] > div > div > div[role="slider"] {
+        background: linear-gradient(135deg, #0ea5e9, #2563eb) !important;
+        border: 2px solid #7dd3fc !important;
+        box-shadow: 0 0 10px rgba(14,165,233,0.45) !important;
+    }
+
+    .checks-count-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+        padding: 0 2px;
+    }
+
+    .checks-count-badge {
+        background: rgba(14,165,233,0.15);
+        border: 1px solid rgba(14,165,233,0.30);
+        color: #7dd3fc;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 999px;
+    }
+
+    .checks-count-label {
+        font-size: 13px;
+        color: #5a7a9e;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -1912,16 +1958,15 @@ elif menu == "Admin":
 
             st.markdown(
                 f"""
-                <div class="chart-card">
-                    <div class="chart-title">{tr("filter_checks")}</div>
-                    <div class="chart-subtitle">
-                        {tr("filter_checks_text")}
-                    </div>
+                <div class="admin-section-card">
+                    <div class="admin-section-title">{tr("filter_checks")}</div>
+                    <div class="admin-section-subtitle">{tr("filter_checks_text")}</div>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
+            st.markdown('<div class="filter-controls-card">', unsafe_allow_html=True)
             filter_col1, filter_col2 = st.columns(2)
 
             with filter_col1:
@@ -1938,6 +1983,7 @@ elif menu == "Admin":
                     100,
                     0
                 )
+            st.markdown('</div>', unsafe_allow_html=True)
 
             filtered_df = checks_df.copy()
 
@@ -1964,6 +2010,16 @@ elif menu == "Admin":
             ].copy()
 
             display_checks["created_at"] = display_checks["created_at"].dt.strftime("%Y-%m-%d %H:%M")
+
+            st.markdown(
+                f"""
+                <div class="checks-count-row">
+                    <span class="checks-count-badge">{len(filtered_df)}</span>
+                    <span class="checks-count-label">records</span>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
             st.markdown('<div class="admin-table-card">', unsafe_allow_html=True)
 
