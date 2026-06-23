@@ -2083,15 +2083,56 @@ elif menu == "Admin":
                 unsafe_allow_html=True
             )
 
-            st.markdown('<div class="admin-table-card">', unsafe_allow_html=True)
+            if display_checks.empty:
+                st.info(tr("no_checks_found"))
+            else:
+                rows_html = ""
+                for _, row in display_checks.iterrows():
+                    label = str(row.get("prediction_label", ""))
+                    label_pill = (
+                        '<span class="status-pill-legit" style="font-size:11px;padding:3px 10px">LEGIT</span>'
+                        if label == "LEGIT"
+                        else '<span class="status-pill-scam" style="font-size:11px;padding:3px 10px">SCAM</span>'
+                    )
+                    risk = float(row.get("risk_score", 0))
+                    risk_color = "#fca5a5" if risk >= 60 else ("#fcd34d" if risk >= 30 else "#86efac")
+                    prob_pct = f"{float(row.get('probability', 0)) * 100:.1f}%"
 
-            st.dataframe(
-                display_checks,
-                use_container_width=True,
-                hide_index=True
-            )
+                    rows_html += f"""
+                    <tr>
+                        <td class="tbl-id">#{int(row['id'])}</td>
+                        <td class="tbl-muted">{int(row['user_id'])}</td>
+                        <td class="tbl-muted">{int(row['token_id'])}</td>
+                        <td>{label_pill}</td>
+                        <td style="color:{risk_color};font-weight:700">{risk:.2f}</td>
+                        <td class="tbl-muted">{prob_pct}</td>
+                        <td class="tbl-muted">{row['created_at']}</td>
+                        <td style="color:#c7d7e8;font-size:13px">{row['explanation']}</td>
+                    </tr>
+                    """
 
-            st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown(
+                    f"""
+                    <div class="admin-table-card">
+                        <table class="admin-dark-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Token</th>
+                                    <th>Prediction</th>
+                                    <th>Risk Score</th>
+                                    <th>Probability</th>
+                                    <th>Date</th>
+                                    <th>Explanation</th>
+                                </tr>
+                            </thead>
+                            <tbody>{rows_html}</tbody>
+                        </table>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
         else:
             st.info(tr("no_checks_found"))
