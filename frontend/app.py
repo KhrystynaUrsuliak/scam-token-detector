@@ -810,6 +810,118 @@ st.markdown("""
         box-shadow: 0 10px 28px rgba(0,0,0,0.22);
         margin-top: 12px;
     }
+
+    .perf-metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .perf-metric-card {
+        background: rgba(255,255,255,0.055);
+        border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 20px;
+        padding: 22px 18px 18px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .perf-metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .perf-metric-acc::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .perf-metric-prec::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+    .perf-metric-rec::before { background: linear-gradient(90deg, #06b6d4, #38bdf8); }
+    .perf-metric-f1::before { background: linear-gradient(90deg, #10b981, #34d399); }
+
+    .perf-metric-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #7c9bbf;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 12px;
+    }
+
+    .perf-metric-value {
+        font-size: 32px;
+        font-weight: 900;
+        letter-spacing: -1px;
+        line-height: 1;
+    }
+
+    .perf-metric-acc .perf-metric-value { color: #93c5fd; }
+    .perf-metric-prec .perf-metric-value { color: #c4b5fd; }
+    .perf-metric-rec .perf-metric-value { color: #67e8f9; }
+    .perf-metric-f1 .perf-metric-value { color: #6ee7b7; }
+
+    .perf-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 14px;
+        font-size: 14px;
+    }
+
+    .perf-table th {
+        background: rgba(255,255,255,0.06);
+        color: #9fb7d3;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        text-align: left;
+    }
+
+    .perf-table th:first-child { border-radius: 10px 0 0 0; }
+    .perf-table th:last-child { border-radius: 0 10px 0 0; }
+
+    .perf-table td {
+        padding: 11px 14px;
+        color: #dbeafe;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        font-weight: 600;
+    }
+
+    .perf-table tr:last-child td { border-bottom: none; }
+
+    .perf-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+    .perf-row-label {
+        color: #9fb7d3 !important;
+        font-weight: 700 !important;
+        font-size: 12px !important;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .perf-cell-good {
+        color: #86efac !important;
+        font-size: 16px !important;
+        font-weight: 800 !important;
+    }
+
+    .perf-cell-bad {
+        color: #fca5a5 !important;
+        font-size: 16px !important;
+        font-weight: 800 !important;
+    }
+
+    .perf-test-note {
+        font-size: 12px;
+        color: #5a7a9e;
+        margin-top: 10px;
+        text-align: right;
+        font-style: italic;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -1910,63 +2022,103 @@ elif menu == "Admin":
         if metrics_response.status_code == 200:
             m = metrics_response.json()
 
-            mc1, mc2, mc3, mc4 = st.columns(4)
-            mc1.metric(tr("accuracy"), f"{m['accuracy'] * 100:.2f}%")
-            mc2.metric(tr("precision"), f"{m['precision'] * 100:.2f}%")
-            mc3.metric(tr("recall"), f"{m['recall'] * 100:.2f}%")
-            mc4.metric(tr("f1_score"), f"{m['f1_score'] * 100:.2f}%")
+            cm = m["confusion_matrix"]
+            tn, fp_val = cm[0][0], cm[0][1]
+            fn_val, tp = cm[1][0], cm[1][1]
+            cr = m["class_report"]
 
-            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="perf-metric-grid">
+                <div class="perf-metric-card perf-metric-acc">
+                    <div class="perf-metric-label">{tr("accuracy")}</div>
+                    <div class="perf-metric-value">{m['accuracy'] * 100:.2f}%</div>
+                </div>
+                <div class="perf-metric-card perf-metric-prec">
+                    <div class="perf-metric-label">{tr("precision")}</div>
+                    <div class="perf-metric-value">{m['precision'] * 100:.2f}%</div>
+                </div>
+                <div class="perf-metric-card perf-metric-rec">
+                    <div class="perf-metric-label">{tr("recall")}</div>
+                    <div class="perf-metric-value">{m['recall'] * 100:.2f}%</div>
+                </div>
+                <div class="perf-metric-card perf-metric-f1">
+                    <div class="perf-metric-label">{tr("f1_score")}</div>
+                    <div class="perf-metric-value">{m['f1_score'] * 100:.2f}%</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
             chart_col1, chart_col2 = st.columns(2)
 
             with chart_col1:
-                st.markdown(
-                    f"""
-                    <div class="chart-card">
-                        <div class="chart-title">{tr("confusion_matrix")}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-                cm = m["confusion_matrix"]
-                cm_df = pd.DataFrame(
-                    cm,
-                    index=["True LEGIT", "True SCAM"],
-                    columns=["Pred LEGIT", "Pred SCAM"]
-                )
-                st.dataframe(cm_df, use_container_width=True)
+                st.markdown(f"""
+                <div class="chart-card">
+                    <div class="chart-title">{tr("confusion_matrix")}</div>
+                    <table class="perf-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Pred LEGIT</th>
+                                <th>Pred SCAM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="perf-row-label">True LEGIT</td>
+                                <td class="perf-cell-good">{tn}</td>
+                                <td class="perf-cell-bad">{fp_val}</td>
+                            </tr>
+                            <tr>
+                                <td class="perf-row-label">True SCAM</td>
+                                <td class="perf-cell-bad">{fn_val}</td>
+                                <td class="perf-cell-good">{tp}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                st.markdown(
-                    f"""
-                    <div class="chart-card" style="margin-top:1rem">
-                        <div class="chart-title">{tr("per_class_report")}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-                cr = m["class_report"]
-                cr_df = pd.DataFrame({
-                    "Class": ["LEGIT", "SCAM"],
-                    "Precision": [cr["legit"]["precision"], cr["scam"]["precision"]],
-                    "Recall": [cr["legit"]["recall"], cr["scam"]["recall"]],
-                    "F1": [cr["legit"]["f1"], cr["scam"]["f1"]],
-                    tr("support"): [cr["legit"]["support"], cr["scam"]["support"]],
-                })
-                st.dataframe(cr_df, use_container_width=True, hide_index=True)
+                <div class="chart-card" style="margin-top: 16px">
+                    <div class="chart-title">{tr("per_class_report")}</div>
+                    <table class="perf-table">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1</th>
+                                <th>{tr("support")}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="status-pill-legit" style="font-size:12px;padding:4px 10px">LEGIT</span></td>
+                                <td>{cr["legit"]["precision"] * 100:.2f}%</td>
+                                <td>{cr["legit"]["recall"] * 100:.2f}%</td>
+                                <td>{cr["legit"]["f1"] * 100:.2f}%</td>
+                                <td>{cr["legit"]["support"]}</td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-pill-scam" style="font-size:12px;padding:4px 10px">SCAM</span></td>
+                                <td>{cr["scam"]["precision"] * 100:.2f}%</td>
+                                <td>{cr["scam"]["recall"] * 100:.2f}%</td>
+                                <td>{cr["scam"]["f1"] * 100:.2f}%</td>
+                                <td>{cr["scam"]["support"]}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="perf-test-note">Test set: {m['test_size']} samples</div>
+                </div>
+                """, unsafe_allow_html=True)
 
             with chart_col2:
                 if m.get("probability_distribution"):
                     pd_data = m["probability_distribution"]
-                    st.markdown(
-                        f"""
-                        <div class="chart-card">
-                            <div class="chart-title">{tr("prob_distribution")}</div>
-                            <div class="chart-subtitle">{tr("prob_distribution_text")}</div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                    st.markdown(f"""
+                    <div class="chart-card" style="padding-bottom: 4px">
+                        <div class="chart-title">{tr("prob_distribution")}</div>
+                        <div class="chart-subtitle">{tr("prob_distribution_text")}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
                     fig_prob = px.bar(
                         x=pd_data["labels"],
                         y=pd_data["values"],
@@ -1976,7 +2128,7 @@ elif menu == "Admin":
                     )
                     fig_prob.update_layout(
                         height=380,
-                        margin=dict(l=20, r=20, t=20, b=20),
+                        margin=dict(l=20, r=20, t=10, b=20),
                         paper_bgcolor="rgba(0,0,0,0)",
                         plot_bgcolor="rgba(255,255,255,0.02)",
                         font=dict(color="#e5eef9"),
