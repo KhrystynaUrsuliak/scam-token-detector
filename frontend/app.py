@@ -500,6 +500,62 @@ st.markdown("""
         color: #dbeafe !important;
     }
 
+    /* Nav radio: change active dot from default red to blue */
+    section[data-testid="stSidebar"] [data-baseweb="radio"] label > div:first-child > div {
+        border-color: #38bdf8 !important;
+    }
+
+    section[data-testid="stSidebar"] [data-baseweb="radio"] label > div:first-child > div > div {
+        background-color: #0ea5e9 !important;
+    }
+
+    .sidebar-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.08);
+        margin: 16px 0 12px;
+        border: none;
+    }
+
+    .sidebar-user-card {
+        background: linear-gradient(135deg, rgba(37,99,235,0.18), rgba(14,165,233,0.10));
+        border: 1px solid rgba(56,189,248,0.22);
+        border-radius: 16px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .sidebar-user-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0ea5e9, #2563eb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 800;
+        color: white !important;
+        flex-shrink: 0;
+    }
+
+    .sidebar-user-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: #e0f2fe !important;
+        margin-bottom: 3px;
+    }
+
+    .sidebar-user-role {
+        font-size: 11px;
+        font-weight: 600;
+        color: #7dd3fc !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
     h1, h2, h3, h4, h5, h6 {
         color: #ffffff !important;
     }
@@ -1077,9 +1133,21 @@ if get_user_role() == "admin" and menu != "Admin":
 user_info = get_current_user()
 
 if st.session_state.token and user_info:
-    st.sidebar.markdown("---")
-    st.sidebar.success(tr("logged_in_as", username=user_info["username"]))
-    st.sidebar.caption(tr("role", role=user_info["role"]))
+    st.sidebar.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
+
+    avatar = user_info["username"][0].upper() if user_info.get("username") else "U"
+    st.sidebar.markdown(
+        f"""
+        <div class="sidebar-user-card">
+            <div class="sidebar-user-avatar">{avatar}</div>
+            <div>
+                <div class="sidebar-user-name">{user_info["username"]}</div>
+                <div class="sidebar-user-role">{user_info["role"]}</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     if st.sidebar.button(tr("log_out")):
         st.session_state.token = None
