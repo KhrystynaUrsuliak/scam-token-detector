@@ -715,6 +715,80 @@ st.markdown("""
         line-height: 1.5;
     }
 
+    .feature-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 24px;
+        padding: 28px 28px 26px;
+        box-shadow: 0 18px 50px rgba(0,0,0,0.30);
+        min-height: 190px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        border-radius: 24px 24px 0 0;
+    }
+
+    .feature-card-scam::before   { background: linear-gradient(90deg, #ef4444, #f97316); }
+    .feature-card-intel::before  { background: linear-gradient(90deg, #3b82f6, #8b5cf6); }
+    .feature-card-ws::before     { background: linear-gradient(90deg, #06b6d4, #10b981); }
+
+    .feature-card h3 {
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 12px;
+        margin-top: 6px;
+    }
+
+    .feature-card p {
+        color: #b6c7dc;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .feature-card-scam h3  { color: #fda4af; }
+    .feature-card-intel h3 { color: #a5b4fc; }
+    .feature-card-ws h3    { color: #67e8f9; }
+
+    .hero-badge {
+        display: inline-block;
+        background: rgba(14,165,233,0.13);
+        border: 1px solid rgba(14,165,233,0.28);
+        color: #38bdf8;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 6px 18px;
+        border-radius: 999px;
+        margin-bottom: 22px;
+        letter-spacing: 0.3px;
+    }
+
+    .btn-secondary > div > button {
+        background: rgba(255,255,255,0.07) !important;
+        border: 1px solid rgba(255,255,255,0.22) !important;
+        box-shadow: none !important;
+        color: #dbeafe !important;
+    }
+
+    .btn-secondary > div > button:hover {
+        background: rgba(255,255,255,0.12) !important;
+        border-color: rgba(255,255,255,0.35) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: none !important;
+        color: #ffffff !important;
+    }
+
+    .btn-secondary > div > button p {
+        color: inherit !important;
+        font-weight: 800 !important;
+    }
+
     .section-title {
         font-size: 34px;
         font-weight: 850;
@@ -1178,6 +1252,8 @@ if st.session_state.token and user_info:
 # =========================
 
 if menu == "Home":
+    st.markdown('<div class="hero-badge">AI-Powered Crypto Safety</div>', unsafe_allow_html=True)
+
     st.markdown(
         f'<div class="hero-title">{tr("home_title")}</div>',
         unsafe_allow_html=True
@@ -1203,12 +1279,14 @@ if menu == "Home":
                 go_to_page("Auth")
 
     with col_btn2:
+        st.markdown('<div class="btn-secondary">', unsafe_allow_html=True)
         if st.button(tr("view_dashboard")):
             if st.session_state.token:
                 go_to_page("Dashboard")
             else:
                 st.session_state.redirect_after_auth = "Dashboard"
                 go_to_page("Auth")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown(f'<div class="section-title">{tr("core_features")}</div>', unsafe_allow_html=True)
 
@@ -1216,31 +1294,25 @@ if menu == "Home":
 
     with c1:
         st.markdown(f"""
-        <div class="premium-card">
+        <div class="feature-card feature-card-scam">
             <h3>{tr("scam_detection")}</h3>
-            <p>
-                {tr("scam_detection_text")}
-            </p>
+            <p>{tr("scam_detection_text")}</p>
         </div>
         """, unsafe_allow_html=True)
 
     with c2:
         st.markdown(f"""
-        <div class="premium-card">
+        <div class="feature-card feature-card-intel">
             <h3>{tr("token_intelligence")}</h3>
-            <p>
-                {tr("token_intelligence_text")}
-            </p>
+            <p>{tr("token_intelligence_text")}</p>
         </div>
         """, unsafe_allow_html=True)
 
     with c3:
         st.markdown(f"""
-        <div class="premium-card">
+        <div class="feature-card feature-card-ws">
             <h3>{tr("personal_workspace")}</h3>
-            <p>
-                {tr("personal_workspace_text")}
-            </p>
+            <p>{tr("personal_workspace_text")}</p>
         </div>
         """, unsafe_allow_html=True)
 
