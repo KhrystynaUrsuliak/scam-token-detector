@@ -6,7 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = st.secrets.get("API_URL", "http://127.0.0.1:8000")
 
 TRANSLATIONS = {
     "English": {
