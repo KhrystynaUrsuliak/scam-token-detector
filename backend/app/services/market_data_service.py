@@ -1,8 +1,15 @@
 import requests
+import os
 from typing import Optional, Dict, Any, List
 
 
 COINGECKO_BASE_URL = "https://api.coingecko.com/api/v3"
+
+def _headers():
+    api_key = os.getenv("COINGECKO_API_KEY")
+    if api_key:
+        return {"x-cg-demo-api-key": api_key}
+    return {}
 
 
 def _clean_text(text: Optional[str], max_length: int = 500) -> Optional[str]:
@@ -32,6 +39,7 @@ def search_coin_id(name: str, slug: str) -> Optional[str]:
         response = requests.get(
             f"{COINGECKO_BASE_URL}/search",
             params={"query": query},
+            headers=_headers(),
             timeout=10
         )
 
@@ -83,6 +91,7 @@ def get_coin_info(coin_id: str) -> Optional[Dict[str, Any]]:
                 "developer_data": "false",
                 "sparkline": "false"
             },
+            headers=_headers(),
             timeout=10
         )
 
@@ -130,6 +139,7 @@ def get_market_chart(coin_id: str, days: int = 7) -> Optional[List[Dict[str, Any
                 "vs_currency": "usd",
                 "days": days
             },
+            headers=_headers(),
             timeout=10
         )
 
