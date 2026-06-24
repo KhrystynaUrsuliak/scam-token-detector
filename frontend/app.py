@@ -723,22 +723,22 @@ st.markdown("""
         color: #ffffff;
     }
 
-    .btn-secondary > div > button {
+    .home-cta [data-testid="baseButton-secondary"] {
         background: transparent !important;
         border: 1.5px solid rgba(255,255,255,0.30) !important;
         box-shadow: none !important;
         color: #dbeafe !important;
     }
 
-    .btn-secondary > div > button:hover {
-        background: rgba(255,255,255,0.08) !important;
-        border-color: rgba(255,255,255,0.50) !important;
+    .home-cta [data-testid="baseButton-secondary"]:hover {
+        background: rgba(255,255,255,0.09) !important;
+        border-color: rgba(255,255,255,0.55) !important;
         box-shadow: none !important;
         transform: translateY(-2px) !important;
         color: #ffffff !important;
     }
 
-    .btn-secondary > div > button p {
+    .home-cta [data-testid="baseButton-secondary"] p {
         color: inherit !important;
         font-weight: 800 !important;
     }
@@ -1212,10 +1212,11 @@ if menu == "Home":
         unsafe_allow_html=True
     )
 
+    st.markdown('<div class="home-cta">', unsafe_allow_html=True)
     col_btn1, col_btn2, col_empty = st.columns([1.2, 1.2, 5])
 
     with col_btn1:
-        if st.button(tr("check_token_button")):
+        if st.button(tr("check_token_button"), type="primary"):
             if st.session_state.token:
                 go_to_page("Check Token")
             else:
@@ -1223,14 +1224,14 @@ if menu == "Home":
                 go_to_page("Auth")
 
     with col_btn2:
-        st.markdown('<div class="btn-secondary">', unsafe_allow_html=True)
         if st.button(tr("view_dashboard")):
             if st.session_state.token:
                 go_to_page("Dashboard")
             else:
                 st.session_state.redirect_after_auth = "Dashboard"
                 go_to_page("Auth")
-        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown(f'<div class="section-title">{tr("core_features")}</div>', unsafe_allow_html=True)
 
