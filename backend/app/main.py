@@ -5,6 +5,15 @@ from app.routes import checks
 from app.routes import favorites
 from app.routes import reports
 from app.admin import router as admin_router
+from app.database import engine, Base
+import app.models.user
+import app.models.token
+import app.models.check
+import app.models.favorite
+import app.models.report
+import app.models.audit_log
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Crypto Scam Token Detection API",
