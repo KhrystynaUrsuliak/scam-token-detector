@@ -1142,7 +1142,10 @@ if user_role == "admin":
     if st.session_state.current_page != "Admin":
         st.session_state.current_page = "Admin"
 else:
-    navigation_items = ["Home", "Auth", "Dashboard", "Check Token", "History", "Favorites"]
+    if st.session_state.token:
+        navigation_items = ["Home", "Dashboard", "Check Token", "History", "Favorites"]
+    else:
+        navigation_items = ["Home", "Auth", "Dashboard", "Check Token", "History", "Favorites"]
 
     if st.session_state.current_page not in navigation_items:
         st.session_state.current_page = "Home"
