@@ -556,6 +556,61 @@ st.markdown("""
         letter-spacing: 0.5px;
     }
 
+    .sidebar-nav-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #4a6a8a !important;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding-bottom: 6px;
+        margin-top: 4px;
+    }
+
+    .nav-item > div > button,
+    .nav-item-active > div > button {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        padding: 10px 14px !important;
+        border-radius: 10px !important;
+        font-size: 14px !important;
+        width: 100% !important;
+        margin-bottom: 2px !important;
+        transition: background 0.15s ease, color 0.15s ease !important;
+    }
+
+    .nav-item > div > button {
+        color: #7c9bbf !important;
+        font-weight: 600 !important;
+    }
+
+    .nav-item > div > button:hover {
+        background: rgba(255,255,255,0.06) !important;
+        color: #dbeafe !important;
+        transform: none !important;
+    }
+
+    .nav-item-active > div > button {
+        background: rgba(14,165,233,0.12) !important;
+        border-left: 3px solid #0ea5e9 !important;
+        color: #e0f2fe !important;
+        font-weight: 700 !important;
+        padding-left: 11px !important;
+    }
+
+    .nav-item > div > button:hover,
+    .nav-item-active > div > button:hover {
+        transform: none !important;
+    }
+
+    .nav-item > div > button p,
+    .nav-item-active > div > button p {
+        color: inherit !important;
+        font-weight: inherit !important;
+    }
+
     h1, h2, h3, h4, h5, h6 {
         color: #ffffff !important;
     }
@@ -1117,14 +1172,21 @@ else:
     if st.session_state.current_page not in navigation_items:
         st.session_state.current_page = "Home"
 
-menu = st.sidebar.radio(
-    tr("navigation"),
-    navigation_items,
-    index=navigation_items.index(st.session_state.current_page),
-    format_func=page_label
+st.sidebar.markdown(
+    f'<div class="sidebar-nav-label">{tr("navigation")}</div>',
+    unsafe_allow_html=True
 )
 
-st.session_state.current_page = menu
+for _page in navigation_items:
+    _is_active = st.session_state.current_page == _page
+    _div_class = "nav-item-active" if _is_active else "nav-item"
+    st.sidebar.markdown(f'<div class="{_div_class}">', unsafe_allow_html=True)
+    if st.sidebar.button(page_label(_page), key=f"nav_{_page}", use_container_width=True):
+        st.session_state.current_page = _page
+        st.rerun()
+    st.sidebar.markdown('</div>', unsafe_allow_html=True)
+
+menu = st.session_state.current_page
 
 if get_user_role() == "admin" and menu != "Admin":
     st.session_state.current_page = "Admin"
