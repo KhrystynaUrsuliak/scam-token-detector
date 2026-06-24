@@ -7,6 +7,13 @@ import plotly.graph_objects as go
 
 
 API_URL = st.secrets.get("API_URL", "http://127.0.0.1:8000")
+COINGECKO_API_KEY = st.secrets.get("COINGECKO_API_KEY", "")
+
+
+def _coingecko_headers():
+    if COINGECKO_API_KEY:
+        return {"x-cg-demo-api-key": COINGECKO_API_KEY}
+    return {}
 
 TRANSLATIONS = {
     "English": {
@@ -438,6 +445,7 @@ def get_token_icon(name, slug, prediction):
         response = requests.get(
             "https://api.coingecko.com/api/v3/search",
             params={"query": query},
+            headers=_coingecko_headers(),
             timeout=8
         )
 
