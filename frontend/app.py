@@ -694,8 +694,7 @@ st.markdown("""
         margin-bottom: 34px;
     }
 
-    .premium-card {
-        background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.045));
+    .premium-card {        background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.045));
         border: 1px solid rgba(255,255,255,0.13);
         border-radius: 24px;
         padding: 28px;
@@ -722,6 +721,26 @@ st.markdown("""
         margin-top: 55px;
         margin-bottom: 18px;
         color: #ffffff;
+    }
+
+    .btn-secondary > div > button {
+        background: transparent !important;
+        border: 1.5px solid rgba(255,255,255,0.30) !important;
+        box-shadow: none !important;
+        color: #dbeafe !important;
+    }
+
+    .btn-secondary > div > button:hover {
+        background: rgba(255,255,255,0.08) !important;
+        border-color: rgba(255,255,255,0.50) !important;
+        box-shadow: none !important;
+        transform: translateY(-2px) !important;
+        color: #ffffff !important;
+    }
+
+    .btn-secondary > div > button p {
+        color: inherit !important;
+        font-weight: 800 !important;
     }
 
     [data-testid="stMetric"] {
@@ -1204,12 +1223,14 @@ if menu == "Home":
                 go_to_page("Auth")
 
     with col_btn2:
+        st.markdown('<div class="btn-secondary">', unsafe_allow_html=True)
         if st.button(tr("view_dashboard")):
             if st.session_state.token:
                 go_to_page("Dashboard")
             else:
                 st.session_state.redirect_after_auth = "Dashboard"
                 go_to_page("Auth")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown(f'<div class="section-title">{tr("core_features")}</div>', unsafe_allow_html=True)
 
