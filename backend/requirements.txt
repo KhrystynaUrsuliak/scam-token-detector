@@ -4,6 +4,7 @@ sqlalchemy
 psycopg2-binary
 python-dotenv
 python-jose[cryptography]
+email-validator
 passlib[bcrypt]
 pandas
 scikit-learn==1.4.2
